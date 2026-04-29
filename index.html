@@ -269,12 +269,13 @@
     .step-labels { display: none; }
   }
   @media print {
-    .progress-wrap, .nav { display: none !important; }
+    .progress-wrap, .nav, .print-hide { display: none !important; }
     .header { padding: .8rem 1rem; }
     .header h1 { font-size: 1.1rem; margin-bottom: .1rem; }
     .header p { font-size: .8rem; }
     .container { display: flex; flex-direction: column; padding: .5rem; }
     .step { display: block !important; }
+    .step:not([data-step="8"]) { display: none !important; }
     .card { break-inside: avoid; margin-bottom: .5rem; padding: 1rem; }
     .step[data-step="8"] { order: -1; }
     #summaryCard { break-after: avoid; }
@@ -931,7 +932,7 @@
     </div>
 
     <div class="card">
-      <button class="btn btn-primary" onclick="document.title='house123_buy';window.print();document.title='第二間房產購置評估系統';" style="width:100%;">匯出 PDF</button>
+      <button class="btn btn-primary print-hide" onclick="document.title='house123_buy';window.print();document.title='house123_buy';" style="width:100%;">匯出 PDF</button>
     </div>
   </div>
 
