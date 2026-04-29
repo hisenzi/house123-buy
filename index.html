@@ -276,9 +276,8 @@
     .container { display: flex; flex-direction: column; padding: .5rem; }
     .step { display: block !important; }
     .step:not([data-step="8"]) { display: none !important; }
+    .step[data-step="8"] { display: flex !important; flex-direction: column; }
     .card { break-inside: avoid; margin-bottom: .5rem; padding: 1rem; }
-    .step[data-step="8"] { order: -1; }
-    .step[data-step="8"] { display: flex; flex-direction: column; }
     #summaryCard { order: 1; break-after: avoid; }
     #summaryRisk { order: 2; break-inside: avoid; }
     #actionChecklist { order: 3; break-inside: avoid; font-size: .8rem; }
