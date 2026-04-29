@@ -270,12 +270,16 @@
   }
   @media print {
     .progress-wrap, .nav { display: none !important; }
-    .container { display: flex; flex-direction: column; }
+    .header { padding: .8rem 1rem; }
+    .header h1 { font-size: 1.1rem; margin-bottom: .1rem; }
+    .header p { font-size: .8rem; }
+    .container { display: flex; flex-direction: column; padding: .5rem; }
     .step { display: block !important; }
-    .card { break-inside: avoid; }
-    /* 評估摘要（Step 8 第一個 card）印在最前面 */
-    #summaryCard { order: -1; }
+    .card { break-inside: avoid; margin-bottom: .5rem; padding: 1rem; }
     .step[data-step="8"] { order: -1; }
+    #summaryCard { break-after: avoid; }
+    #summaryRisk { break-inside: avoid; }
+    #summaryDetails { break-inside: avoid; }
   }
 </style>
 </head>
@@ -865,7 +869,16 @@
 
     <div class="card" id="summaryCard">
       <h2>你的評估摘要</h2>
-      <div id="summaryContent"><p style="font-size:.85rem;color:var(--text-secondary);">請先完成前面各步驟的填寫。</p></div>
+      <p id="summaryPlaceholder" style="font-size:.85rem;color:var(--text-secondary);">請先完成前面各步驟的填寫。</p>
+      <div id="summaryKeyNumbers"></div>
+    </div>
+
+    <div class="card" id="summaryRisk" style="display:none;">
+      <div id="summaryRiskContent"></div>
+    </div>
+
+    <div class="card" id="summaryDetails" style="display:none;">
+      <div id="summaryDetailsContent"></div>
     </div>
 
     <div class="card">
@@ -1167,9 +1180,10 @@ function renderSummary() {
     return ok ? '<span class="tag tag-green">✓ 正常</span>' : '<span class="tag tag-red">⚠ 需注意</span>';
   }
 
-  document.getElementById('summaryContent').innerHTML = `
-    <p style="font-size:.78rem;color:var(--text-secondary);margin-bottom:1rem;">依填入資料自動彙整，請確認各步驟均已填寫完整後列印。</p>
+  document.getElementById('summaryPlaceholder').style.display = 'none';
 
+  // Card 1: 關鍵財務數字
+  document.getElementById('summaryKeyNumbers').innerHTML = `
     <h3 style="margin-top:0;border-top:none;padding-top:0;">關鍵財務數字</h3>
     <div class="result-grid">
       <div class="result-item"><div class="label">目標總價</div><div class="value">${price ? fmt(price)+' 萬' : '—'}</div></div>
@@ -1178,10 +1192,13 @@ function renderSummary() {
       <div class="result-item"><div class="label">需準備自備款</div><div class="value">${downPayment ? fmt(downPayment)+' 萬' : '—'}</div></div>
       <div class="result-item"><div class="label">攤還期月付</div><div class="value">${monthlyAmort ? fmtD(monthlyAmort)+' 萬' : '—'}</div></div>
       <div class="result-item"><div class="label">總利息支出（${termY||'?'}年）</div><div class="value">${totalInterest ? fmt(totalInterest)+' 萬' : '—'}</div></div>
-      ${cashSurplus !== null ? `<div class="result-item full ${cashSurplus >= 0 ? '' : 'danger'}"><div class="label">月現金流（配息 − 房貸）</div><div class="value">${cashSurplus >= 0 ? '+' : ''}${fmtD(cashSurplus)} 萬</div></div>` : ''}
     </div>
+  `;
 
-    <h3>風險燈號</h3>
+  // Card 2: 風險燈號
+  document.getElementById('summaryRisk').style.display = 'block';
+  document.getElementById('summaryRiskContent').innerHTML = `
+    <h3 style="margin-top:0;border-top:none;padding-top:0;">風險燈號</h3>
     <table>
       <tr><th>項目</th><th>狀態</th><th>說明</th></tr>
       <tr><td>負擔能力</td><td>${light(maxAfford >= price, !income || !price)}</td><td>可負擔 ${fmt(maxAfford)} 萬 vs 目標 ${fmt(price)} 萬</td></tr>
@@ -1193,8 +1210,12 @@ function renderSummary() {
       <tr><td>已過綁約期</td><td>${light(lockFree, !getRadio('lockPeriod'))}</td><td>${lockFree ? '可自由轉貸或清償' : getRadio('lockPeriod') === 'no' ? '轉貸須評估違約金' : '待確認'}</td></tr>
       <tr><td>配偶共識</td><td>${light(spouseAgree === 'yes' || spouseAgree === 'single', !spouseAgree)}</td><td>${spouseLabel}</td></tr>
     </table>
+  `;
 
-    <h3>現有房產概況</h3>
+  // Card 3: 現有房產 + 收入 + 目標物件
+  document.getElementById('summaryDetails').style.display = 'block';
+  document.getElementById('summaryDetailsContent').innerHTML = `
+    <h3 style="margin-top:0;border-top:none;padding-top:0;">現有房產概況</h3>
     <table>
       <tr><th>項目</th><th>內容</th></tr>
       <tr><td>地點 / 坪數</td><td>${currentLocation} ${currentSize ? '・'+currentSize+' 坪' : ''}</td></tr>
@@ -1214,7 +1235,6 @@ function renderSummary() {
       ${passive ? `<tr><td>其他收入（年化）</td><td>${fmt(passive)} 萬</td></tr>` : ''}
       <tr><td>合計年收入</td><td>${totalIncome ? fmt(totalIncome)+' 萬' : '—'}</td></tr>
       <tr><td>估算可負擔房價</td><td>${maxAfford ? fmt(maxAfford)+' 萬' : '—'}</td></tr>
-      ${dividend ? `<tr><td>月配息</td><td>${fmtD(dividend)} 萬 / 月</td></tr>` : ''}
     </table>
 
     <h3>目標物件</h3>
