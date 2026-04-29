@@ -270,8 +270,12 @@
   }
   @media print {
     .progress-wrap, .nav { display: none !important; }
+    .container { display: flex; flex-direction: column; }
     .step { display: block !important; }
     .card { break-inside: avoid; }
+    /* 評估摘要（Step 8 第一個 card）印在最前面 */
+    #summaryCard { order: -1; }
+    .step[data-step="8"] { order: -1; }
   }
 </style>
 </head>
