@@ -278,9 +278,14 @@
     .step:not([data-step="8"]) { display: none !important; }
     .card { break-inside: avoid; margin-bottom: .5rem; padding: 1rem; }
     .step[data-step="8"] { order: -1; }
-    #summaryCard { break-after: avoid; }
-    #summaryRisk { break-inside: avoid; }
-    #summaryDetails { break-inside: avoid; }
+    .step[data-step="8"] { display: flex; flex-direction: column; }
+    #summaryCard { order: 1; break-after: avoid; }
+    #summaryRisk { order: 2; break-inside: avoid; }
+    #actionChecklist { order: 3; break-inside: avoid; font-size: .8rem; }
+    #actionChecklist h2 { font-size: 1rem; margin-bottom: .2rem; }
+    #actionChecklist h3 { font-size: .85rem; margin-top: .5rem; margin-bottom: .2rem; }
+    #actionChecklist .checklist li { padding: .15rem 0; }
+    #summaryDetails { order: 4; break-inside: avoid; }
   }
 </style>
 </head>
@@ -882,7 +887,7 @@
       <div id="summaryDetailsContent"></div>
     </div>
 
-    <div class="card">
+    <div class="card" id="actionChecklist">
       <h2>Step 8｜行動清單</h2>
       <p class="subtitle">按順序逐步推進</p>
 
