@@ -1122,10 +1122,20 @@ function calcRisk() {
 
 function renderSummary() {
   // 收集所有資料
-  const motivation = { upgrade:'換屋升級', kids:'子女就學', invest:'投資置產', rent:'以租養貸', parent:'父母同住' }[getRadio('motivation')] || '—';
+  // Step 1
+  const familySize = getVal('familySize') || '—';
+  const hasKids = getRadio('hasKids');
+  const kidStages = [];
+  document.querySelectorAll('.kidStage:checked').forEach(c => {
+    kidStages.push({elementary:'國小',junior:'國中',senior:'高中',college:'大學'}[c.value] || c.value);
+  });
+  const kidsLabel = hasKids === 'yes' ? (kidStages.length ? kidStages.join('、') : '有子女') : hasKids === 'no' ? '無' : '—';
+  const motivation = { self:'自住', upgrade:'換屋', invest:'投資收租', kids:'置產' }[getRadio('motivation')] || '—';
   const spouseAgree = getRadio('spouseAgree');
   const spouseLabel = { yes:'已同意', no:'還在溝通', single:'不適用' }[spouseAgree] || '—';
+  const timeline = { '3m':'3 個月內', '6m':'半年內', '1y':'1 年內', study:'先評估' }[getRadio('timeline')] || '—';
 
+  // Step 2
   const currentLocation = getStr('currentLocation') || '—';
   const currentValue = getVal('currentValue');
   const currentSize = getVal('currentSize');
@@ -1134,9 +1144,14 @@ function renderSummary() {
   const loan01 = getVal('loan01');
   const loan04 = getVal('loan04');
   const firstPlan = { keep:'保留出租', sell18:'18個月內出售（換屋豁免）', sell:'出售', family:'留給家人' }[getRadio('firstHousePlan')] || '—';
+
+  // Step 3
   const creditDone = getRadio('creditReport') === 'yes';
+  const creditLabel = creditDone ? '已調閱' : (getRadio('creditReport') === 'no' ? '尚未調閱' : '—');
   const lockFree = getRadio('lockPeriod') === 'yes';
+  const lockLabel = lockFree ? '已過綁約期' : (getRadio('lockPeriod') === 'no' ? '尚未過綁約期' : '—');
   const refiPlan = getRadio('planRefi');
+  const refiLabel = { yes:'有意願', no:'暫不考慮' }[refiPlan] || '—';
 
   const income = getVal('annualIncome');
   const passive = getRadio('passiveIncome') === 'yes' ? getVal('monthlyPassive') * 12 : 0;
@@ -1163,11 +1178,18 @@ function renderSummary() {
   const dividend = getVal('monthlyDividend');
   const cashSurplus = dividend ? dividend - monthlyAmort : null;
 
+  // Step 5
+  const houseType = { apartment:'公寓', huaxia:'華廈', building:'大樓', townhouse:'透天厝' }[getRadio('houseType')] || '—';
+
+  // Step 6 (loanPath already used in Card 1)
+  const loanPath = { new:'新購（名下無房）', second6:'第二戶 6 成', exempt8:'換屋豁免最高 8 成', first8:'第一戶有房無貸最高 8 成' }[getRadio('loanPath')] || '—';
+
+  // Step 7
   const savings = getVal('savings');
   const emergency = getVal('emergencyFund');
   const monthlyExpense = getVal('monthlyExpense');
   const insurance = { yes:'已有足額', partial:'不足額', no:'尚未購買' }[getRadio('hasInsurance')] || '—';
-  const loanPath = { second6:'第二戶 6 成', exempt8:'換屋豁免最高 8 成', first8:'第一戶最高 8 成' }[getRadio('loanPath')] || '—';
+  const resilience = { lt3:'3 個月以內', '3to6':'3~6 個月', '6to12':'6~12 個月', gt12:'1 年以上' }[getRadio('resilience')] || '—';
 
   // 風險燈號
   const jobMult = { gov:18, medical:18, tech:16, general:15, self:12 }[getRadio('jobType')] || 15;
@@ -1212,39 +1234,51 @@ function renderSummary() {
     </table>
   `;
 
-  // Card 3: 現有房產 + 收入 + 目標物件
+  // Card 3: Steps 1-7 全部列點
+  const ulStyle = 'margin:0 0 0 1.2rem;font-size:.85rem;line-height:1.8;';
   document.getElementById('summaryDetails').style.display = 'block';
   document.getElementById('summaryDetailsContent').innerHTML = `
-    <h3 style="margin-top:0;border-top:none;padding-top:0;">現有房產概況</h3>
-    <table>
-      <tr><th>項目</th><th>內容</th></tr>
-      <tr><td>地點 / 坪數</td><td>${currentLocation} ${currentSize ? '・'+currentSize+' 坪' : ''}</td></tr>
-      <tr><td>估計市值</td><td>${currentValue ? fmt(currentValue)+' 萬' : '—'}</td></tr>
-      <tr><td>現有貸款餘額</td><td>${currentLoan ? fmt(currentLoan)+' 萬（利率 '+currentRate+'%）' : '—'}</td></tr>
-      ${loan01 ? `<tr><td>├ 01 購置型科目</td><td>${fmt(loan01)} 萬</td></tr>` : ''}
-      ${loan04 ? `<tr><td>├ 04 週轉金科目</td><td>${fmt(loan04)} 萬</td></tr>` : ''}
-      <tr><td>估算可增貸空間</td><td>${currentValue && currentLoan ? fmt(Math.max(0, currentValue*0.7 - currentLoan))+' 萬（市值七成 − 餘額）' : '—'}</td></tr>
-      <tr><td>未來規劃</td><td>${firstPlan}</td></tr>
-    </table>
+    <h3 style="margin-top:0;border-top:none;padding-top:0;">家庭現況</h3>
+    <ul style="${ulStyle}">
+      <li>家庭 ${familySize} 人 ／ 子女：${kidsLabel} ／ 配偶：${spouseLabel}</li>
+      <li>動機：${motivation} ／ 預計時程：${timeline}</li>
+    </ul>
 
-    <h3>收入與貸款人</h3>
-    <table>
-      <tr><th>項目</th><th>內容</th></tr>
-      <tr><td>職業</td><td>${jobType}</td></tr>
-      <tr><td>年薪</td><td>${income ? fmt(income)+' 萬' : '—'}</td></tr>
-      ${passive ? `<tr><td>其他收入（年化）</td><td>${fmt(passive)} 萬</td></tr>` : ''}
-      <tr><td>合計年收入</td><td>${totalIncome ? fmt(totalIncome)+' 萬' : '—'}</td></tr>
-      <tr><td>估算可負擔房價</td><td>${maxAfford ? fmt(maxAfford)+' 萬' : '—'}</td></tr>
-    </table>
+    <h3>現有房產</h3>
+    <ul style="${ulStyle}">
+      <li>${currentLocation} ${currentSize ? '・'+currentSize+' 坪' : ''} ／ 估計市值 ${currentValue ? fmt(currentValue)+' 萬' : '—'}</li>
+      <li>貸款餘額 ${currentLoan ? fmt(currentLoan)+' 萬（利率 '+currentRate+'%）' : '—'}${loan01 ? '，01科目 '+fmt(loan01)+' 萬' : ''}${loan04 ? '，04科目 '+fmt(loan04)+' 萬' : ''}</li>
+      <li>可增貸空間 ${currentValue && currentLoan ? fmt(Math.max(0, currentValue*0.7 - currentLoan))+' 萬' : '—'} ／ 規劃：${firstPlan}</li>
+    </ul>
+
+    <h3>現有貸款狀態</h3>
+    <ul style="${ulStyle}">
+      <li>聯徵：${creditLabel} ／ 綁約期：${lockLabel}</li>
+      <li>增貸規劃：${refiLabel}</li>
+    </ul>
+
+    <h3>收入</h3>
+    <ul style="${ulStyle}">
+      <li>${jobType} ／ 年薪 ${income ? fmt(income)+' 萬' : '—'}${passive ? '＋其他 '+fmt(passive)+' 萬' : ''} ／ 合計 ${totalIncome ? fmt(totalIncome)+' 萬' : '—'}</li>
+      <li>估算可負擔房價 ${maxAfford ? fmt(maxAfford)+' 萬' : '—'}</li>
+    </ul>
 
     <h3>目標物件</h3>
-    <table>
-      <tr><th>項目</th><th>內容</th></tr>
-      <tr><td>區域</td><td>${area}</td></tr>
-      <tr><td>坪數</td><td>${getVal('minSize') && getVal('maxSize') ? getVal('minSize')+'~'+getVal('maxSize')+' 坪' : '—'}</td></tr>
-      <tr><td>屋齡上限</td><td>${getRadio('houseAge') === '99' ? '不限' : (getRadio('houseAge') ? getRadio('houseAge')+' 年以內' : '—')}</td></tr>
-      <tr><td>購屋動機</td><td>${motivation}</td></tr>
-    </table>
+    <ul style="${ulStyle}">
+      <li>${area} ／ ${houseType} ／ ${getVal('minSize') && getVal('maxSize') ? getVal('minSize')+'~'+getVal('maxSize')+' 坪' : '—'} ／ 屋齡 ${getRadio('houseAge') === '99' ? '不限' : (getRadio('houseAge') ? getRadio('houseAge')+' 年內' : '—')}</li>
+    </ul>
+
+    <h3>貸款策略</h3>
+    <ul style="${ulStyle}">
+      <li>${loanPath} ／ 成數 ${ratio || '—'}% ／ 利率 ${rateAnnual || '—'}%</li>
+      <li>年限 ${termY || '—'} 年 ／ 寬限期 ${graceY ? graceY+' 年' : '無'}</li>
+    </ul>
+
+    <h3>風險準備</h3>
+    <ul style="${ulStyle}">
+      <li>存款 ${savings ? fmt(savings)+' 萬' : '—'} ／ 備用金 ${emergency ? fmt(emergency)+' 萬' : '—'} ／ 壽險：${insurance}</li>
+      <li>收入中斷承受力：${resilience}</li>
+    </ul>
   `;
 }
 
