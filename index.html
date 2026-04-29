@@ -337,11 +337,10 @@
       <div class="field">
         <label>購屋主要動機</label>
         <div class="radio-group">
-          <label><input type="radio" name="motivation" value="upgrade"><span>換屋升級</span></label>
-          <label><input type="radio" name="motivation" value="kids"><span>子女就學</span></label>
-          <label><input type="radio" name="motivation" value="invest"><span>投資置產</span></label>
-          <label><input type="radio" name="motivation" value="rent"><span>以租養貸</span></label>
-          <label><input type="radio" name="motivation" value="parent"><span>父母同住</span></label>
+          <label><input type="radio" name="motivation" value="self"><span>自住</span></label>
+          <label><input type="radio" name="motivation" value="upgrade"><span>換屋</span></label>
+          <label><input type="radio" name="motivation" value="invest"><span>投資收租</span></label>
+          <label><input type="radio" name="motivation" value="kids"><span>置產給子女</span></label>
         </div>
       </div>
 
@@ -371,9 +370,9 @@
       <div class="field">
         <label>房屋類型</label>
         <div class="radio-group">
-          <label><input type="radio" name="houseType" value="apartment"><span>公寓（無電梯）</span></label>
-          <label><input type="radio" name="houseType" value="building"><span>大樓（有電梯）</span></label>
-          <label><input type="radio" name="houseType" value="suite"><span>套房</span></label>
+          <label><input type="radio" name="houseType" value="apartment"><span>公寓（5樓以下，無電梯）</span></label>
+          <label><input type="radio" name="houseType" value="huaxia"><span>華廈（7~10樓，有電梯）</span></label>
+          <label><input type="radio" name="houseType" value="building"><span>大樓（11樓以上，有電梯）</span></label>
           <label><input type="radio" name="houseType" value="townhouse"><span>透天厝</span></label>
         </div>
       </div>
@@ -708,9 +707,10 @@
       <div class="field">
         <label>預計申貸路徑</label>
         <div class="radio-group">
+          <label><input type="radio" name="loanPath" value="new"><span>新購（名下無房）</span></label>
           <label><input type="radio" name="loanPath" value="second6"><span>第二戶（6 成，無寬限期）</span></label>
           <label><input type="radio" name="loanPath" value="exempt8"><span>換屋豁免（最高 8 成）</span></label>
-          <label><input type="radio" name="loanPath" value="first8"><span>第一戶（最高 8 成，有寬限期）</span></label>
+          <label><input type="radio" name="loanPath" value="first8"><span>第一戶有房無貸（最高 8 成）</span></label>
         </div>
       </div>
 
@@ -769,23 +769,6 @@
       </div>
 
       <div id="loanCalcResult" class="result-grid" style="margin-top:1.2rem;"></div>
-
-      <h3>配息策略（選填）</h3>
-      <p style="font-size:.83rem;margin-bottom:.8rem;color:var(--text-secondary);">
-        若計畫以增貸資金購買配息型基金，填入預計配息金額，系統將計算現金流缺口。
-      </p>
-
-      <div class="danger-box">
-        ⚠️ 2024 年起央行要求銀行嚴查增貸與理財型房貸的資金流向。以「過水基金」方式處理資金存在合規風險，操作前<strong>務必</strong>諮詢貸款顧問或代書，確認當前銀行核貸態度。
-      </div>
-
-      <div class="field">
-        <label>預計月配息金額</label>
-        <div class="suffix">
-          <input type="number" id="monthlyDividend" min="0" max="100" step="0.5" placeholder="萬元（選填）">
-          <span>萬元／月</span>
-        </div>
-      </div>
 
       <div id="cashflowResult"></div>
     </div>
@@ -931,7 +914,7 @@
     </div>
 
     <div class="card">
-      <button class="btn btn-primary" onclick="window.print()" style="width:100%;">匯出 PDF</button>
+      <button class="btn btn-primary" onclick="document.title='house123_buy';window.print();document.title='第二間房產購置評估系統';" style="width:100%;">匯出 PDF</button>
     </div>
   </div>
 
