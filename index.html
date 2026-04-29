@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第二間房產購置評估系統</title>
+<style>
+  :root {
+    --bg: #f8f7f4;
+    --card: #fff;
+    --accent: #2d5a27;
+    --accent-light: #e8f0e6;
+    --text: #1a1a1a;
+    --text-secondary: #666;
+    --border: #e0ddd8;
+    --danger: #c0392b;
+    --warning: #e67e22;
+    --success: #27ae60;
+    --radius: 12px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Noto Sans TC", "PingFang TC", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+  .header {
+    background: var(--accent);
+    color: #fff;
+    padding: 2rem 1.5rem;
+    text-align: center;
+  }
+  .header h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: .4rem; }
+  .header p { opacity: .85; font-size: .95rem; }
+  .progress-bar {
+    display: flex;
+    gap: 4px;
+    padding: 1rem 1.5rem;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .progress-bar .dot {
+    flex: 1;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--border);
+    transition: background .3s;
+    cursor: pointer;
+  }
+  .progress-bar .dot.active { background: var(--accent); }
+  .progress-bar .dot.done { background: var(--success); }
+  .step-labels {
+    display: flex;
+    padding: 0 1.5rem .5rem;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    gap: 4px;
+    overflow-x: auto;
+  }
+  .step-labels span {
+    flex: 1;
+    font-size: .65rem;
+    color: var(--text-secondary);
+    text-align: center;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  .step-labels span.active { color: var(--accent); font-weight: 600; }
+  .container { max-width: 680px; margin: 0 auto; padding: 1.5rem; }
+  .step { display: none; }
+  .step.active { display: block; }
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border);
+  }
+  .card h2 {
+    font-size: 1.15rem;
+    margin-bottom: .3rem;
+    color: var(--accent);
+  }
+  .card h3 {
+    font-size: 1rem;
+    margin: 1rem 0 .5rem;
+    padding-top: .8rem;
+    border-top: 1px solid var(--border);
+  }
+  .card h3:first-of-type { border-top: none; padding-top: 0; margin-top: .8rem; }
+  .card .subtitle {
+    font-size: .85rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+  }
+  .field { margin-bottom: 1rem; }
+  .field label {
+    display: block;
+    font-size: .85rem;
+    font-weight: 600;
+    margin-bottom: .3rem;
+  }
+  .field .hint {
+    font-size: .78rem;
+    color: var(--text-secondary);
+    margin-bottom: .3rem;
+  }
+  .field input, .field select {
+    width: 100%;
+    padding: .6rem .8rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: .95rem;
+    background: var(--bg);
+    transition: border-color .2s;
+  }
+  .field input:focus, .field select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .field .suffix {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+  .field .suffix input { flex: 1; }
+  .field .suffix span { font-size: .85rem; color: var(--text-secondary); white-space: nowrap; }
+  .radio-group { display: flex; gap: .5rem; flex-wrap: wrap; }
+  .radio-group label {
+    font-weight: 400;
+    padding: .5rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: .85rem;
+    transition: all .2s;
+    flex: 1;
+    text-align: center;
+    min-width: 80px;
+  }
+  .radio-group input { display: none; }
+  .radio-group input:checked + span {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .radio-group label:has(input:checked) {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .info-box {
+    background: #f0f4ff;
+    border-left: 3px solid #3b82f6;
+    padding: .8rem 1rem;
+    border-radius: 0 8px 8px 0;
+    margin: 1rem 0;
+    font-size: .85rem;
+  }
+  .warn-box {
+    background: #fff8f0;
+    border-left: 3px solid var(--warning);
+    padding: .8rem 1rem;
+    border-radius: 0 8px 8px 0;
+    margin: 1rem 0;
+    font-size: .85rem;
+  }
+  .success-box {
+    background: #f0faf0;
+    border-left: 3px solid var(--success);
+    padding: .8rem 1rem;
+    border-radius: 0 8px 8px 0;
+    margin: 1rem 0;
+    font-size: .85rem;
+  }
+  .checklist { list-style: none; }
+  .checklist li {
+    padding: .5rem 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    gap: .5rem;
+    font-size: .9rem;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist input[type="checkbox"] {
+    margin-top: .35rem;
+    accent-color: var(--accent);
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+  .nav {
+    display: flex;
+    gap: .8rem;
+    margin-top: 1.5rem;
+    padding-bottom: 2rem;
+  }
+  .btn {
+    flex: 1;
+    padding: .75rem;
+    border: none;
+    border-radius: 10px;
+    font-size: .95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #234a1e; }
+  .btn-secondary { background: var(--border); color: var(--text); }
+  .btn-secondary:hover { background: #d0cdc8; }
+  .result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .8rem;
+    margin: 1rem 0;
+  }
+  .result-item {
+    background: var(--bg);
+    padding: .8rem;
+    border-radius: 8px;
+    text-align: center;
+  }
+  .result-item .label { font-size: .75rem; color: var(--text-secondary); }
+  .result-item .value { font-size: 1.2rem; font-weight: 700; color: var(--accent); margin-top: .2rem; }
+  .result-item.full { grid-column: 1 / -1; }
+  .result-item.warn .value { color: var(--warning); }
+  .result-item.danger .value { color: var(--danger); }
+  .timeline {
+    position: relative;
+    padding-left: 1.5rem;
+    margin: 1rem 0;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border);
+  }
+  .timeline .tl-item {
+    position: relative;
+    padding-bottom: 1.2rem;
+  }
+  .timeline .tl-item::before {
+    content: '';
+    position: absolute;
+    left: -1.5rem;
+    top: .45rem;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--card);
+    z-index: 1;
+  }
+  .timeline .tl-item .tl-title {
+    font-weight: 600;
+    font-size: .9rem;
+  }
+  .timeline .tl-item .tl-desc {
+    font-size: .82rem;
+    color: var(--text-secondary);
+    margin-top: .2rem;
+  }
+  .tag {
+    display: inline-block;
+    padding: .15rem .5rem;
+    border-radius: 4px;
+    font-size: .72rem;
+    font-weight: 600;
+  }
+  .tag-green { background: #e8f5e9; color: #2e7d32; }
+  .tag-orange { background: #fff3e0; color: #e65100; }
+  .tag-red { background: #fbe9e7; color: #c62828; }
+  .tag-blue { background: #e3f2fd; color: #1565c0; }
+  .collapse-trigger {
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .collapse-trigger::after {
+    content: '▾';
+    font-size: .8rem;
+    transition: transform .2s;
+  }
+  .collapse-trigger.collapsed::after { transform: rotate(-90deg); }
+  .collapse-content { overflow: hidden; transition: max-height .3s; }
+  .collapse-content.collapsed { max-height: 0 !important; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .85rem;
+    margin: .5rem 0;
+  }
+  th, td {
+    padding: .5rem .6rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    font-weight: 600;
+    font-size: .78rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: .03em;
+  }
+  @media (max-width: 480px) {
+    .result-grid { grid-template-columns: 1fr; }
+    .header h1 { font-size: 1.3rem; }
+    .container { padding: 1rem; }
+    .step-labels { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>第二間房產購置評估系統</h1>
+  <p>從現況盤點到貸款策略，一步步引導你完成評估</p>
+</div>
+
+<div class="progress-bar" id="progressBar"></div>
+<div class="step-labels" id="stepLabels"></div>
+
+<div class="container">
+
+  <!-- Step 1: 家庭現況 -->
+  <div class="step" data-step="1">
+    <div class="card">
+      <h2>Step 1｜家庭現況盤點</h2>
+      <p class="subtitle">先了解你的家庭結構與基本需求</p>
+
+      <div class="field">
+        <label>家庭成員數</label>
+        <div class="suffix">
+          <input type="number" id="familySize" min="1" max="10" value="4">
+          <span>人</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>是否有學齡子女？</label>
+        <div class="radio-group">
+          <label><input type="radio" name="hasKids" value="yes" checked><span>有</span></label>
+          <label><input type="radio" name="hasKids" value="no"><span>沒有</span></label>
+        </div>
+      </div>
+
+      <div class="field" id="kidsField">
+        <label>子女就學階段（可複選）</label>
+        <div class="radio-group">
+          <label><input type="checkbox" class="kidStage" value="elementary"><span>國小</span></label>
+          <label><input type="checkbox" class="kidStage" value="junior" checked><span>國中</span></label>
+          <label><input type="checkbox" class="kidStage" value="senior" checked><span>高中</span></label>
+          <label><input type="checkbox" class="kidStage" value="college"><span>大學</span></label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>配偶是否同意購屋？</label>
+        <div class="radio-group">
+          <label><input type="radio" name="spouseAgree" value="yes" checked><span>已同意</span></label>
+          <label><input type="radio" name="spouseAgree" value="no"><span>還在溝通</span></label>
+        </div>
+      </div>
+
+      <div class="info-box" id="spouseWarning" style="display:none;">
+        家庭重大財務決策建議取得配偶共識後再進行。這不只是財務問題，也影響後續貸款申請（配偶擔保）與資產規劃。
+      </div>
+
+      <div class="field">
+        <label>購屋主要動機</label>
+        <div class="radio-group">
+          <label><input type="radio" name="motivation" value="upgrade" checked><span>換屋升級</span></label>
+          <label><input type="radio" name="motivation" value="invest"><span>投資置產</span></label>
+          <label><input type="radio" name="motivation" value="kids"><span>子女就學</span></label>
+          <label><input type="radio" name="motivation" value="rent"><span>收租</span></label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: 現有房產 -->
+  <div class="step" data-step="2">
+    <div class="card">
+      <h2>Step 2｜現有房產資訊</h2>
+      <p class="subtitle">確認你名下的第一間房狀況</p>
+
+      <div class="field">
+        <label>現有房產地點</label>
+        <input type="text" id="currentLocation" placeholder="例：板橋、中和" value="">
+      </div>
+
+      <div class="field">
+        <label>房屋類型</label>
+        <div class="radio-group">
+          <label><input type="radio" name="houseType" value="apartment"><span>公寓</span></label>
+          <label><input type="radio" name="houseType" value="building" checked><span>大樓</span></label>
+          <label><input type="radio" name="houseType" value="suite"><span>套房</span></label>
+          <label><input type="radio" name="houseType" value="townhouse"><span>透天</span></label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>室內坪數</label>
+        <div class="suffix">
+          <input type="number" id="currentSize" min="5" max="100" value="26" step="0.1">
+          <span>坪</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>現有房產估計市值</label>
+        <div class="suffix">
+          <input type="number" id="currentValue" min="0" max="10000" value="1200" step="10">
+          <span>萬元</span>
+        </div>
+        <div class="hint">可上實價登錄查詢同社區近期成交價</div>
+      </div>
+
+      <div class="field">
+        <label>第一間房未來計畫</label>
+        <div class="radio-group">
+          <label><input type="radio" name="firstHousePlan" value="keep" checked><span>保留（出租）</span></label>
+          <label><input type="radio" name="firstHousePlan" value="sell"><span>出售</span></label>
+          <label><input type="radio" name="firstHousePlan" value="family"><span>留給家人住</span></label>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <strong>保留出租提醒：</strong>出租前需評估租金行情、管理成本、是否需要整理裝修。整層出租通常租金較高但空置風險也較高。
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: 現有貸款 -->
+  <div class="step" data-step="3">
+    <div class="card">
+      <h2>Step 3｜現有貸款狀況</h2>
+      <p class="subtitle">這是決定第二間能貸多少的關鍵</p>
+
+      <div class="field">
+        <label>目前房貸餘額</label>
+        <div class="suffix">
+          <input type="number" id="currentLoan" min="0" max="5000" value="260" step="10">
+          <span>萬元</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>目前房貸利率</label>
+        <div class="suffix">
+          <input type="number" id="currentRate" min="0" max="10" value="2.7" step="0.1">
+          <span>%</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>是否已過綁約期？</label>
+        <div class="radio-group">
+          <label><input type="radio" name="lockPeriod" value="yes" checked><span>已過</span></label>
+          <label><input type="radio" name="lockPeriod" value="no"><span>還在綁約中</span></label>
+        </div>
+      </div>
+
+      <div class="warn-box" id="lockWarning" style="display:none;">
+        綁約期內轉貸或清償可能需支付違約金（通常為貸款餘額的 1%~2%）。建議等綁約期滿後再操作，或將違約金納入成本評估。
+      </div>
+
+      <div class="field">
+        <label>是否已調閱聯徵報告？</label>
+        <div class="radio-group">
+          <label><input type="radio" name="creditReport" value="yes"><span>已調閱</span></label>
+          <label><input type="radio" name="creditReport" value="no" checked><span>尚未</span></label>
+        </div>
+      </div>
+
+      <div class="warn-box" id="creditWarning">
+        <strong>必做事項：</strong>至金融聯合徵信中心（JCIC）線上或臨櫃調閱免費個人信用報告，確認貸款科目：
+        <ul style="margin:.5rem 0 0 1rem;">
+          <li><strong>01 科目（購屋貸款）</strong>：會被計入「已有房貸」，影響第二間貸款成數</li>
+          <li><strong>04 科目（周轉金）</strong>：不算房貸科目，不影響貸款成數</li>
+        </ul>
+      </div>
+
+      <div class="field">
+        <label>01 購屋貸款餘額（若已知）</label>
+        <div class="suffix">
+          <input type="number" id="loan01" min="0" max="5000" value="" placeholder="尚未確認">
+          <span>萬元</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>04 周轉金餘額（若已知）</label>
+        <div class="suffix">
+          <input type="number" id="loan04" min="0" max="5000" value="" placeholder="尚未確認">
+          <span>萬元</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4: 收入與負擔能力 -->
+  <div class="step" data-step="4">
+    <div class="card">
+      <h2>Step 4｜家庭收入與負擔能力</h2>
+      <p class="subtitle">計算你能負擔多少房價</p>
+
+      <div class="field">
+        <label>主要貸款人</label>
+        <div class="radio-group">
+          <label><input type="radio" name="mainBorrower" value="self"><span>自己</span></label>
+          <label><input type="radio" name="mainBorrower" value="spouse" checked><span>配偶</span></label>
+          <label><input type="radio" name="mainBorrower" value="joint"><span>共同</span></label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>貸款人年收入（薪資所得）</label>
+        <div class="suffix">
+          <input type="number" id="annualIncome" min="0" max="1000" value="60" step="1">
+          <span>萬元</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>貸款人職業類別</label>
+        <div class="radio-group">
+          <label><input type="radio" name="jobType" value="medical" checked><span>軍公教/醫護</span></label>
+          <label><input type="radio" name="jobType" value="tech"><span>科技/金融</span></label>
+          <label><input type="radio" name="jobType" value="general"><span>一般企業</span></label>
+          <label><input type="radio" name="jobType" value="self"><span>自營/接案</span></label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>是否有其他被動收入？</label>
+        <div class="radio-group">
+          <label><input type="radio" name="passiveIncome" value="yes"><span>有</span></label>
+          <label><input type="radio" name="passiveIncome" value="no" checked><span>沒有</span></label>
+        </div>
+      </div>
+
+      <div class="field" id="passiveIncomeField" style="display:none;">
+        <label>每月被動收入金額</label>
+        <div class="suffix">
+          <input type="number" id="monthlyPassive" min="0" max="100" value="0" step="1">
+          <span>萬元/月</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>每月可支配房貸上限</label>
+        <div class="suffix">
+          <input type="number" id="monthlyBudget" min="0" max="50" value="" placeholder="自動估算">
+          <span>萬元/月</span>
+        </div>
+        <div class="hint">留空將自動以月收入的 1/3 估算</div>
+      </div>
+
+      <div id="affordabilityResult" class="result-grid" style="margin-top:1.5rem;"></div>
+    </div>
+  </div>
+
+  <!-- Step 5: 購屋條件 -->
+  <div class="step" data-step="5">
+    <div class="card">
+      <h2>Step 5｜新屋需求條件</h2>
+      <p class="subtitle">定義你的理想物件</p>
+
+      <div class="field">
+        <label>目標總價（含車位）</label>
+        <div class="suffix">
+          <input type="number" id="targetPrice" min="500" max="10000" value="2000" step="50">
+          <span>萬元</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>目標區域</label>
+        <input type="text" id="targetArea" placeholder="例：板橋埔墘、江子翠" value="">
+      </div>
+
+      <div class="field">
+        <label>空間需求（室內坪數）</label>
+        <div style="display:flex;gap:.5rem;align-items:center;">
+          <input type="number" id="minSize" min="5" max="80" value="16" style="width:80px">
+          <span style="font-size:.85rem;">~</span>
+          <input type="number" id="maxSize" min="5" max="80" value="20" style="width:80px">
+          <span style="font-size:.85rem;color:var(--text-secondary);">坪</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>格局偏好</label>
+        <div class="radio-group">
+          <label><input type="radio" name="layout" value="openLiving" checked><span>公領域大、房間小</span></label>
+          <label><input type="radio" name="layout" value="balanced"><span>均衡配置</span></label>
+          <label><input type="radio" name="layout" value="bigRooms"><span>房間大優先</span></label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>屋齡限制</label>
+        <div class="radio-group">
+          <label><input type="radio" name="houseAge" value="10"><span>10年內</span></label>
+          <label><input type="radio" name="houseAge" value="20"><span>20年內</span></label>
+          <label><input type="radio" name="houseAge" value="30" checked><span>30年內</span></label>
+          <label><input type="radio" name="houseAge" value="99"><span>不限</span></label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>是否需要車位？</label>
+        <div class="radio-group">
+          <label><input type="radio" name="parking" value="yes" checked><span>需要</span></label>
+          <label><input type="radio" name="parking" value="no"><span>不需要</span></label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>生活機能優先項（可複選）</label>
+        <div class="radio-group">
+          <label><input type="checkbox" class="amenity" value="school" checked><span>學校近</span></label>
+          <label><input type="checkbox" class="amenity" value="market" checked><span>市場/超市</span></label>
+          <label><input type="checkbox" class="amenity" value="mrt"><span>捷運站</span></label>
+          <label><input type="checkbox" class="amenity" value="park"><span>公園</span></label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 6: 貸款策略 -->
+  <div class="step" data-step="6">
+    <div class="card">
+      <h2>Step 6｜貸款策略規劃</h2>
+      <p class="subtitle">核心：如何從 6 成貸到 8 成</p>
+
+      <div class="info-box">
+        <strong>央行規定：</strong>名下有房貸者，購買第二間房最多貸款 6 成。但若能將現有房貸的 01 科目清償，就能以「有房無貸」身分申請第一順位房貸（最高 8 成）。
+      </div>
+
+      <h3>策略一：洗掉 01 科目</h3>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-title">1. 調閱聯徵確認 01 餘額</div>
+          <div class="tl-desc">確認要清償多少才能變「有房無貸」</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-title">2. 對第一間房增貸（理財型房貸）</div>
+          <div class="tl-desc">借出資金歸在 04 科目，不影響房貸認定</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-title">3. 資金過水（保守型基金）</div>
+          <div class="tl-desc">將增貸資金投入基金後贖回，建立合理金流軌跡</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-title">4. 清償 01 購屋貸款</div>
+          <div class="tl-desc">名下只剩 04 科目，聯徵上呈現「有房無貸」</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-title">5. 以配偶名義申請新房貸 8 成</div>
+          <div class="tl-desc">搭配收入證明，爭取最佳貸款條件</div>
+        </div>
+      </div>
+
+      <h3>策略二：創造第二份收入</h3>
+      <p style="font-size:.85rem;margin-bottom:.8rem;">
+        用增貸資金以貸款人名義購買月配息基金，配息視為「其他所得」，可提升年收入，進而拉高可負擔房價。
+      </p>
+
+      <div class="field">
+        <label>預計月配息金額</label>
+        <div class="suffix">
+          <input type="number" id="monthlyDividend" min="0" max="50" value="5" step="1">
+          <span>萬元/月</span>
+        </div>
+      </div>
+
+      <div id="incomeBoostResult" class="result-grid"></div>
+
+      <h3>策略三：選擇高成數貸款方案</h3>
+      <div class="info-box">
+        <strong>參考方案（華南銀行）：</strong>
+        <ul style="margin:.5rem 0 0 1rem;">
+          <li>85 成房貸 + 0.5 成裝修貸款</li>
+          <li>85 成部分：三年寬限期</li>
+          <li>0.5 成裝修款：無寬限期，20 年攤還，利率約 3.17%</li>
+        </ul>
+      </div>
+
+      <div class="field">
+        <label>預計可貸成數</label>
+        <div class="radio-group">
+          <label><input type="radio" name="loanRatio" value="60"><span>6 成</span></label>
+          <label><input type="radio" name="loanRatio" value="80" checked><span>8 成</span></label>
+          <label><input type="radio" name="loanRatio" value="85"><span>8.5 成</span></label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>新房貸預估利率</label>
+        <div class="suffix">
+          <input type="number" id="newRate" min="1" max="6" value="2.2" step="0.1">
+          <span>%</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>貸款年限</label>
+        <div class="radio-group">
+          <label><input type="radio" name="loanTerm" value="20"><span>20 年</span></label>
+          <label><input type="radio" name="loanTerm" value="30" checked><span>30 年</span></label>
+          <label><input type="radio" name="loanTerm" value="40"><span>40 年</span></label>
+        </div>
+      </div>
+
+      <div id="loanCalcResult" class="result-grid" style="margin-top:1rem;"></div>
+    </div>
+  </div>
+
+  <!-- Step 7: 風險防護 -->
+  <div class="step" data-step="7">
+    <div class="card">
+      <h2>Step 7｜風險防護與資產配置</h2>
+      <p class="subtitle">確保財務安全網</p>
+
+      <h3>壽險保障</h3>
+      <p style="font-size:.85rem;margin-bottom:.8rem;">
+        建議購買覆蓋房貸總額的定期壽險或兩年期美元保單。若貸款人發生意外，理賠金可直接清償房貸，繼承人同時擁有「無貸房產」與「持續配息的基金資產」。
+      </p>
+
+      <div class="field">
+        <label>是否已有足額壽險？</label>
+        <div class="radio-group">
+          <label><input type="radio" name="hasInsurance" value="yes"><span>已有</span></label>
+          <label><input type="radio" name="hasInsurance" value="partial"><span>不足額</span></label>
+          <label><input type="radio" name="hasInsurance" value="no" checked><span>沒有</span></label>
+        </div>
+      </div>
+
+      <div class="warn-box" id="insuranceWarning">
+        <strong>建議：</strong>壽險保額應至少覆蓋新房貸款總額。兩年期美元保單是常見搭配方案，保費相對低廉且理賠快速。
+      </div>
+
+      <h3>現金流緩衝</h3>
+      <div class="field">
+        <label>目前可動用存款</label>
+        <div class="suffix">
+          <input type="number" id="savings" min="0" max="5000" value="" placeholder="萬元">
+          <span>萬元</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>扣除購屋自備款後，緊急預備金</label>
+        <div class="suffix">
+          <input type="number" id="emergencyFund" min="0" max="2000" value="" placeholder="萬元">
+          <span>萬元</span>
+        </div>
+        <div class="hint">建議至少保留 6 個月家庭支出</div>
+      </div>
+
+      <h3>資金活化方案</h3>
+      <div class="info-box">
+        <strong>理財型房貸現金流分配：</strong>
+        <ul style="margin:.5rem 0 0 1rem;">
+          <li>基金配息 > 房貸月付 → 差額可定期定額投資 ETF（如 0050）</li>
+          <li>配息也可用來支付第二間房的貸款</li>
+          <li>理財型房貸只付利息，本金彈性運用</li>
+        </ul>
+      </div>
+
+      <div id="cashflowResult"></div>
+    </div>
+  </div>
+
+  <!-- Step 8: 行動清單 -->
+  <div class="step" data-step="8">
+
+    <div class="card" id="summaryCard">
+      <h2>你的評估摘要</h2>
+      <div id="summaryContent"></div>
+    </div>
+
+    <div class="card">
+      <h2>Step 8｜行動清單</h2>
+      <p class="subtitle">按順序完成以下事項</p>
+
+      <h3>立即行動（1~2 週內）</h3>
+      <ul class="checklist">
+        <li><input type="checkbox"><span>至 JCIC 調閱個人聯徵報告，確認 01 與 04 科目餘額</span></li>
+        <li><input type="checkbox"><span>聯繫目前貸款銀行，確認可增貸額度與利率</span></li>
+        <li><input type="checkbox"><span>使用「樂居」或「591」搜尋目標區域物件</span></li>
+        <li><input type="checkbox"><span>聯繫信任房仲（建議直營店），說明需求條件</span></li>
+      </ul>
+
+      <h3>短期行動（1~2 個月）</h3>
+      <ul class="checklist">
+        <li><input type="checkbox"><span>取得第一間房估價報告，精算可增貸額度</span></li>
+        <li><input type="checkbox"><span>執行「洗 01 科目」流程（增貸→基金過水→清償）</span></li>
+        <li><input type="checkbox"><span>以貸款人名義設定月配息基金</span></li>
+        <li><input type="checkbox"><span>開始看屋，建立物件比較表</span></li>
+      </ul>
+
+      <h3>中期行動（2~4 個月）</h3>
+      <ul class="checklist">
+        <li><input type="checkbox"><span>累積 2~3 個月配息紀錄作為收入證明</span></li>
+        <li><input type="checkbox"><span>鎖定目標物件，進入議價階段</span></li>
+        <li><input type="checkbox"><span>向銀行送件申請房貸（備妥收入證明、聯徵報告）</span></li>
+        <li><input type="checkbox"><span>購買足額壽險保單（覆蓋貸款總額）</span></li>
+      </ul>
+
+      <h3>簽約後</h3>
+      <ul class="checklist">
+        <li><input type="checkbox"><span>確認貸款核准條件與實際貸款成數</span></li>
+        <li><input type="checkbox"><span>規劃第一間房出租事宜（若保留）</span></li>
+        <li><input type="checkbox"><span>設定現金流分配：配息→房貸→ETF 定期定額</span></li>
+        <li><input type="checkbox"><span>建立家庭財務儀表板，追蹤每月收支</span></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <button class="btn btn-primary" onclick="window.print()" style="flex:none;width:100%;">匯出 PDF</button>
+    </div>
+  </div>
+
+  <div class="nav" id="navButtons"></div>
+</div>
+
+<script>
+const STEPS = [
+  '家庭現況', '現有房產', '現有貸款', '收入能力',
+  '新屋條件', '貸款策略', '風險防護', '行動清單'
+];
+let currentStep = 1;
+const totalSteps = STEPS.length;
+
+function initProgress() {
+  const bar = document.getElementById('progressBar');
+  const labels = document.getElementById('stepLabels');
+  bar.innerHTML = '';
+  labels.innerHTML = '';
+  for (let i = 1; i <= totalSteps; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (i < currentStep ? ' done' : i === currentStep ? ' active' : '');
+    dot.onclick = () => goStep(i);
+    bar.appendChild(dot);
+    const lbl = document.createElement('span');
+    lbl.textContent = STEPS[i - 1];
+    lbl.className = i === currentStep ? 'active' : '';
+    labels.appendChild(lbl);
+  }
+}
+
+function goStep(n) {
+  if (n < 1 || n > totalSteps) return;
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.querySelector(`.step[data-step="${n}"]`).classList.add('active');
+  currentStep = n;
+  initProgress();
+  renderNav();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (n === 4) calcAffordability();
+  if (n === 6) calcLoanStrategy();
+  if (n === 7) calcCashflow();
+  if (n === 8) renderSummary();
+}
+
+function renderNav() {
+  const nav = document.getElementById('navButtons');
+  nav.innerHTML = '';
+  if (currentStep > 1) {
+    const prev = document.createElement('button');
+    prev.className = 'btn btn-secondary';
+    prev.textContent = '上一步';
+    prev.onclick = () => goStep(currentStep - 1);
+    nav.appendChild(prev);
+  }
+  if (currentStep < totalSteps) {
+    const next = document.createElement('button');
+    next.className = 'btn btn-primary';
+    next.textContent = '下一步';
+    next.onclick = () => goStep(currentStep + 1);
+    nav.appendChild(next);
+  }
+}
+
+function getVal(id) { return parseFloat(document.getElementById(id)?.value) || 0; }
+function getRadio(name) { return document.querySelector(`input[name="${name}"]:checked`)?.value || ''; }
+function fmt(n) { return Math.round(n).toLocaleString(); }
+
+function calcAffordability() {
+  const income = getVal('annualIncome');
+  const passive = getRadio('passiveIncome') === 'yes' ? getVal('monthlyPassive') * 12 : 0;
+  const totalIncome = income + passive;
+  const monthlyIncome = totalIncome / 12;
+  const budget = getVal('monthlyBudget') || (monthlyIncome / 3);
+  const jobType = getRadio('jobType');
+  const multiplier = jobType === 'medical' ? 18 : jobType === 'tech' ? 16 : jobType === 'general' ? 14 : 12;
+  const maxPrice = totalIncome * multiplier;
+
+  const el = document.getElementById('affordabilityResult');
+  el.innerHTML = `
+    <div class="result-item"><div class="label">家庭年收入</div><div class="value">${fmt(totalIncome)} 萬</div></div>
+    <div class="result-item"><div class="label">月收入</div><div class="value">${(monthlyIncome).toFixed(1)} 萬</div></div>
+    <div class="result-item"><div class="label">建議月付上限</div><div class="value">${(budget).toFixed(1)} 萬</div></div>
+    <div class="result-item ${maxPrice < getVal('targetPrice') ? 'warn' : ''}">
+      <div class="label">估算可負擔房價</div><div class="value">${fmt(maxPrice)} 萬</div>
+    </div>
+  `;
+}
+
+function calcLoanStrategy() {
+  const price = getVal('targetPrice');
+  const ratio = parseInt(getRadio('loanRatio')) / 100;
+  const rate = getVal('newRate') / 100 / 12;
+  const term = parseInt(getRadio('loanTerm')) * 12;
+  const loanAmount = price * ratio;
+  const downPayment = price - loanAmount;
+  const monthly = rate > 0 ? loanAmount * rate * Math.pow(1 + rate, term) / (Math.pow(1 + rate, term) - 1) : loanAmount / term;
+  const totalInterest = monthly * term - loanAmount;
+
+  const el = document.getElementById('loanCalcResult');
+  el.innerHTML = `
+    <div class="result-item"><div class="label">貸款金額</div><div class="value">${fmt(loanAmount)} 萬</div></div>
+    <div class="result-item"><div class="label">自備款</div><div class="value">${fmt(downPayment)} 萬</div></div>
+    <div class="result-item"><div class="label">月付金額</div><div class="value">${(monthly).toFixed(2)} 萬</div></div>
+    <div class="result-item"><div class="label">總利息支出</div><div class="value">${fmt(totalInterest)} 萬</div></div>
+  `;
+
+  const dividend = getVal('monthlyDividend');
+  const income = getVal('annualIncome');
+  const boostedIncome = income + dividend * 12;
+  const boostEl = document.getElementById('incomeBoostResult');
+  boostEl.innerHTML = `
+    <div class="result-item"><div class="label">原年收入</div><div class="value">${fmt(income)} 萬</div></div>
+    <div class="result-item"><div class="label">配息加持後年收入</div><div class="value">${fmt(boostedIncome)} 萬</div></div>
+    <div class="result-item full"><div class="label">估算可負擔房價（每 100 萬年薪 ≈ 1,500 萬房價）</div><div class="value">${fmt(boostedIncome / 100 * 1500)} 萬</div></div>
+  `;
+}
+
+function calcCashflow() {
+  const dividend = getVal('monthlyDividend');
+  const price = getVal('targetPrice');
+  const ratio = parseInt(getRadio('loanRatio') || 80) / 100;
+  const rate = getVal('newRate') / 100 / 12;
+  const term = parseInt(getRadio('loanTerm') || 30) * 12;
+  const loanAmount = price * ratio;
+  const monthly = rate > 0 ? loanAmount * rate * Math.pow(1 + rate, term) / (Math.pow(1 + rate, term) - 1) : loanAmount / term;
+  const surplus = dividend - monthly;
+
+  const el = document.getElementById('cashflowResult');
+  el.innerHTML = `
+    <div class="result-grid">
+      <div class="result-item"><div class="label">每月配息</div><div class="value">${dividend} 萬</div></div>
+      <div class="result-item"><div class="label">每月房貸</div><div class="value">${monthly.toFixed(2)} 萬</div></div>
+      <div class="result-item full ${surplus >= 0 ? '' : 'danger'}">
+        <div class="label">每月淨現金流（配息 − 房貸）</div>
+        <div class="value">${surplus >= 0 ? '+' : ''}${surplus.toFixed(2)} 萬</div>
+      </div>
+    </div>
+    ${surplus > 0 ? `<div class="success-box">正現金流 ${surplus.toFixed(1)} 萬/月可用於定期定額投資 ETF 或支付第二間房貸款。</div>` : surplus < 0 ? `<div class="warn-box">配息不足以覆蓋房貸，每月需額外支出 ${Math.abs(surplus).toFixed(1)} 萬。請重新評估配息金額或貸款條件。</div>` : ''}
+  `;
+}
+
+function renderSummary() {
+  // Step 1
+  const familySize = getVal('familySize');
+  const spouseAgree = getRadio('spouseAgree') === 'yes';
+  const motivation = { upgrade:'換屋升級', invest:'投資置產', kids:'子女就學', rent:'收租' }[getRadio('motivation')] || '—';
+
+  // Step 2
+  const currentLocation = document.getElementById('currentLocation')?.value || '未填';
+  const currentValue = getVal('currentValue');
+  const currentSize = getVal('currentSize');
+  const firstPlan = { keep:'保留出租', sell:'出售', family:'留給家人' }[getRadio('firstHousePlan')] || '未定';
+
+  // Step 3
+  const currentLoan = getVal('currentLoan');
+  const currentRate = getVal('currentRate');
+  const loan01 = getVal('loan01');
+  const loan04 = getVal('loan04');
+  const creditDone = getRadio('creditReport') === 'yes';
+  const lockFree = getRadio('lockPeriod') === 'yes';
+  // 增貸空間估算（以市值七成為上限）
+  const maxRefi = currentValue * 0.7;
+  const refiRoom = Math.max(0, maxRefi - currentLoan);
+
+  // Step 4
+  const income = getVal('annualIncome');
+  const passive = getRadio('passiveIncome') === 'yes' ? getVal('monthlyPassive') * 12 : 0;
+  const totalIncome = income + passive;
+  const jobType = getRadio('jobType');
+  const multiplier = jobType === 'medical' ? 18 : jobType === 'tech' ? 16 : jobType === 'general' ? 14 : 12;
+  const maxAfford = totalIncome * multiplier;
+  const monthlyLimit = getVal('monthlyBudget') || (totalIncome / 12 / 3);
+
+  // Step 5
+  const price = getVal('targetPrice');
+  const area = document.getElementById('targetArea')?.value || '未填';
+  const minSize = getVal('minSize');
+  const maxSize = getVal('maxSize');
+  const houseAge = getRadio('houseAge');
+  const needParking = getRadio('parking') === 'yes';
+
+  // Step 6
+  const ratio = parseInt(getRadio('loanRatio') || 80);
+  const loanAmount = price * ratio / 100;
+  const downPayment = price - loanAmount;
+  const rate = getVal('newRate') / 100 / 12;
+  const term = parseInt(getRadio('loanTerm') || 30) * 12;
+  const monthly = rate > 0 ? loanAmount * rate * Math.pow(1+rate,term) / (Math.pow(1+rate,term)-1) : loanAmount/term;
+  const totalInterest = monthly * term - loanAmount;
+  const dividend = getVal('monthlyDividend');
+  const boostedIncome = totalIncome + dividend * 12;
+
+  // Step 7
+  const savings = getVal('savings');
+  const emergency = getVal('emergencyFund');
+  const insurance = { yes:'已有足額', partial:'不足額', no:'尚未購買' }[getRadio('hasInsurance')] || '未填';
+  const cashSurplus = dividend - monthly;
+
+  // 風險燈號
+  const affordOk = maxAfford >= price;
+  const downOk = savings >= downPayment;
+  const cashflowOk = cashSurplus >= 0;
+  const emergencyOk = emergency >= 6 * (totalIncome / 12) * 0.5;
+
+  function light(ok) {
+    return ok
+      ? '<span class="tag tag-green">✓ 正常</span>'
+      : '<span class="tag tag-red">⚠ 需注意</span>';
+  }
+
+  document.getElementById('summaryContent').innerHTML = `
+    <p style="font-size:.8rem;color:var(--text-secondary);margin-bottom:1rem;">根據你填入的資料自動彙整，請確認各欄位均已填寫。</p>
+
+    <h3 style="margin-top:0;border-top:none;padding-top:0;">關鍵數字</h3>
+    <div class="result-grid">
+      <div class="result-item"><div class="label">目標總價</div><div class="value">${fmt(price)} 萬</div></div>
+      <div class="result-item"><div class="label">需自備款</div><div class="value">${fmt(downPayment)} 萬</div></div>
+      <div class="result-item"><div class="label">貸款金額（${ratio}%）</div><div class="value">${fmt(loanAmount)} 萬</div></div>
+      <div class="result-item"><div class="label">每月房貸</div><div class="value">${monthly.toFixed(1)} 萬</div></div>
+      <div class="result-item"><div class="label">總利息支出</div><div class="value">${fmt(totalInterest)} 萬</div></div>
+      <div class="result-item ${cashflowOk ? '' : 'danger'}"><div class="label">月現金流（配息 − 房貸）</div><div class="value">${cashSurplus >= 0 ? '+' : ''}${cashSurplus.toFixed(1)} 萬</div></div>
+    </div>
+
+    <h3>風險燈號</h3>
+    <table>
+      <tr><th>檢查項目</th><th>狀態</th><th>說明</th></tr>
+      <tr><td>負擔能力</td><td>${light(affordOk)}</td><td>可負擔 ${fmt(maxAfford)} 萬，目標 ${fmt(price)} 萬</td></tr>
+      <tr><td>自備款充足</td><td>${light(downOk)}</td><td>存款 ${savings||'未填'} 萬 vs 需 ${fmt(downPayment)} 萬</td></tr>
+      <tr><td>配息現金流</td><td>${light(cashflowOk)}</td><td>配息 ${dividend} 萬 − 房貸 ${monthly.toFixed(1)} 萬 = ${cashSurplus >= 0 ? '+' : ''}${cashSurplus.toFixed(1)} 萬</td></tr>
+      <tr><td>緊急預備金</td><td>${light(emergencyOk)}</td><td>剩餘 ${emergency||'未填'} 萬（建議 ≥ 6 個月支出）</td></tr>
+      <tr><td>壽險保障</td><td>${light(getRadio('hasInsurance')==='yes')}</td><td>${insurance}</td></tr>
+      <tr><td>聯徵已調閱</td><td>${light(creditDone)}</td><td>${creditDone ? '01/04 科目已確認' : '尚未調閱，建議優先處理'}</td></tr>
+      <tr><td>已過綁約期</td><td>${light(lockFree)}</td><td>${lockFree ? '可自由轉貸或清償' : '轉貸須評估違約金'}</td></tr>
+      <tr><td>配偶同意</td><td>${light(spouseAgree)}</td><td>${spouseAgree ? '已達成共識' : '建議先行溝通'}</td></tr>
+    </table>
+
+    <h3>現有房產 × 增貸試算</h3>
+    <table>
+      <tr><th>項目</th><th>數值</th></tr>
+      <tr><td>地點</td><td>${currentLocation}（${currentSize} 坪）</td></tr>
+      <tr><td>估計市值</td><td>${fmt(currentValue)} 萬</td></tr>
+      <tr><td>目前貸款餘額</td><td>${fmt(currentLoan)} 萬（利率 ${currentRate}%）</td></tr>
+      ${loan01 ? `<tr><td>其中 01 購屋科目</td><td>${fmt(loan01)} 萬</td></tr>` : ''}
+      ${loan04 ? `<tr><td>其中 04 周轉金科目</td><td>${fmt(loan04)} 萬</td></tr>` : ''}
+      <tr><td>估計可增貸空間（市值七成 − 餘額）</td><td>${fmt(refiRoom)} 萬</td></tr>
+      <tr><td>第一間房未來規劃</td><td>${firstPlan}</td></tr>
+    </table>
+
+    <h3>收入結構</h3>
+    <table>
+      <tr><th>項目</th><th>數值</th></tr>
+      <tr><td>薪資年收入</td><td>${fmt(income)} 萬</td></tr>
+      ${passive > 0 ? `<tr><td>其他被動收入</td><td>${fmt(passive)} 萬</td></tr>` : ''}
+      <tr><td>月配息（基金）</td><td>${dividend} 萬 / 月（年化 ${fmt(dividend*12)} 萬）</td></tr>
+      <tr><td>配息加持後總年收入</td><td>${fmt(boostedIncome)} 萬</td></tr>
+      <tr><td>估算可負擔房價</td><td>${fmt(boostedIncome / 100 * 1500)} 萬</td></tr>
+    </table>
+
+    <h3>目標物件條件</h3>
+    <table>
+      <tr><th>項目</th><th>內容</th></tr>
+      <tr><td>目標區域</td><td>${area}</td></tr>
+      <tr><td>坪數範圍</td><td>${minSize}~${maxSize} 坪</td></tr>
+      <tr><td>屋齡上限</td><td>${houseAge === '99' ? '不限' : houseAge + ' 年以內'}</td></tr>
+      <tr><td>車位需求</td><td>${needParking ? '需要' : '不需要'}</td></tr>
+      <tr><td>購屋動機</td><td>${motivation}</td></tr>
+    </table>
+  `;
+}
+
+// Event listeners
+document.querySelectorAll('input[name="spouseAgree"]').forEach(r => {
+  r.addEventListener('change', () => {
+    document.getElementById('spouseWarning').style.display = getRadio('spouseAgree') === 'no' ? 'block' : 'none';
+  });
+});
+
+document.querySelectorAll('input[name="hasKids"]').forEach(r => {
+  r.addEventListener('change', () => {
+    document.getElementById('kidsField').style.display = getRadio('hasKids') === 'yes' ? 'block' : 'none';
+  });
+});
+
+document.querySelectorAll('input[name="lockPeriod"]').forEach(r => {
+  r.addEventListener('change', () => {
+    document.getElementById('lockWarning').style.display = getRadio('lockPeriod') === 'no' ? 'block' : 'none';
+  });
+});
+
+document.querySelectorAll('input[name="creditReport"]').forEach(r => {
+  r.addEventListener('change', () => {
+    document.getElementById('creditWarning').style.display = getRadio('creditReport') === 'no' ? 'block' : 'none';
+  });
+});
+
+document.querySelectorAll('input[name="passiveIncome"]').forEach(r => {
+  r.addEventListener('change', () => {
+    document.getElementById('passiveIncomeField').style.display = getRadio('passiveIncome') === 'yes' ? 'block' : 'none';
+  });
+});
+
+document.querySelectorAll('input[name="hasInsurance"]').forEach(r => {
+  r.addEventListener('change', () => {
+    document.getElementById('insuranceWarning').style.display = getRadio('hasInsurance') === 'yes' ? 'none' : 'block';
+  });
+});
+
+// Init
+goStep(1);
+</script>
+</body>
+</html>
